@@ -99,7 +99,7 @@
             } else if (status.includes('use') || status.includes('operational')) {
                 return `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">In Use</span>`;
             } else if (status.includes('broken') || status.includes('out of service')) {
-                return `<span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Offline</span>`;
+                return `<span class="bg-red-500/10 text-red-400 border border-red-800/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Offline</span>`;
             } else {
                 return `<span class="bg-slate-800 text-slate-500 border border-slate-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Unknown Status</span>`;
             }
@@ -121,10 +121,6 @@
                 const operatorName = (poi.OperatorInfo && poi.OperatorInfo.Title && poi.OperatorInfo.Title !== "(Unknown Operator)") 
                                      ? poi.OperatorInfo.Title 
                                      : "Independent Network";
-                
-                // Fetch usage cost or show fallback
-                const usageCost = poi.UsageCost ? poi.UsageCost : "Cost details not provided";
-                const isPaid = poi.UsageCost && (poi.UsageCost.toLowerCase().includes('kwh') || poi.UsageCost.toLowerCase().includes('$') || poi.UsageCost.toLowerCase().includes('£'));
 
                 return `
                 <div class="group bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-emerald-500/50 transition-all shadow-sm flex flex-col md:flex-row justify-between items-start">
@@ -138,16 +134,9 @@
                         <h3 class="text-xl font-bold text-white group-hover:text-emerald-400 transition leading-tight">${poi.AddressInfo.Title}</h3>
                         <p class="text-slate-400 mt-1 text-sm italic">${poi.AddressInfo.AddressLine1 || ''}, ${poi.AddressInfo.Town || ''}</p>
                         
-                        <div class="mt-4 p-3 rounded bg-slate-950/50 border border-slate-800">
-                             <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Pricing / Usage</p>
-                             <p class="text-sm ${isPaid ? 'text-amber-400' : 'text-slate-300'} font-medium">
-                                ${usageCost}
-                             </p>
-                        </div>
-
-                        <div class="flex items-center gap-4 mt-4">
+                        <div class="flex items-center gap-4 mt-6">
                              <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">
-                                ${poi.AddressInfo.Distance.toFixed(1)} KM Away
+                                📍 ${poi.AddressInfo.Distance.toFixed(1)} KM Away
                             </p>
                         </div>
                     </div>
