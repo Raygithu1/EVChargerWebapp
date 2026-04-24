@@ -45,7 +45,6 @@
     </div>
 
     <script>
-        // Updated with your new API key
         const OCM_KEY = '4741d94f-5891-4220-bf74-153df247627e';
 
         function setStatus(msg, isError = false) {
@@ -79,14 +78,25 @@
         async function fetchFromCoords(lat, lon) {
             setStatus("Fetching chargers...");
             try {
-                // Using latest v3 API endpoint and parameters
-                const url = `https://api.openchargemap.io/v3/poi/?key=${OCM_KEY}&latitude=${lat}&longitude=${lon}&distance=25&distanceunit=KM&maxresults=10&compact=true&verbose=false`;
-                const response = await fetch(url);
+                // Ensure output=json is set and standard params are used
+                const url = `https://api.openchargemap.io/v3/poi/?key=${OCM_KEY}&latitude=${lat}&longitude=${lon}&distance=25&distanceunit=KM&maxresults=15&compact=true&verbose=false&output=json`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-API-Key': OCM_KEY
+                    }
+                });
+
                 if (!response.ok) throw new Error("API Limit reached or invalid key.");
-                const data = await response.json();
+                
+                const text = await response.text();
+                if (!text) throw new Error("Empty response from API.");
+                
+                const data = JSON.parse(text);
                 renderResults(data);
             } catch (err) { 
-                setStatus("Failed to reach API: " + err.message, true); 
+                setStatus("Error: " + err.message, true); 
             }
         }
 
@@ -119,6 +129,9 @@
                     return `<span class="bg-slate-800 text-slate-200 px-2 py-1 rounded text-[10px] border border-slate-700 font-medium">🔌 ${title} ${kw}</span>`;
                 }).join(' ') : "No plug data";
 
+                // Corrected Google Maps Link Construction
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${poi.AddressInfo.Latitude},${poi.AddressInfo.Longitude}`;
+
                 return `
                 <div class="group bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-emerald-500/50 transition-all shadow-sm flex flex-col md:flex-row justify-between items-start">
                     <div class="flex-1">
@@ -137,12 +150,12 @@
 
                         <div class="flex items-center gap-4 mt-6">
                              <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">
-                                📍 ${poi.AddressInfo.Distance ? poi.AddressInfo.Distance.toFixed(1) : '?'} KM Away
-                            </p>
+                                📍 ${poi.AddressInfo.Distance ? poi.AddressInfo.Distance.toFixed(1) : '0'} KM Away
+                             </p>
                         </div>
                     </div>
                     <div class="mt-6 md:mt-0 md:ml-4 self-stretch md:self-start">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${poi.AddressInfo.Latitude},${poi.AddressInfo.Longitude}" 
+                        <a href="${mapsUrl}" 
                            target="_blank" 
                            class="inline-block w-full text-center bg-slate-800 hover:bg-emerald-600 text-white text-xs font-bold py-3 px-5 rounded-lg transition-all shadow-md">
                             DIRECTIONS
