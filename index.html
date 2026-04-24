@@ -45,7 +45,8 @@
     </div>
 
     <script>
-        const OCM_KEY = 'd17150ab-e6b7-427c-a03b-af2e9b47cbd1';
+        // Updated with your new API key
+        const OCM_KEY = '4741d94f-5891-4220-bf74-153df247627e';
 
         function setStatus(msg, isError = false) {
             const statusDiv = document.getElementById('status');
@@ -78,17 +79,21 @@
         async function fetchFromCoords(lat, lon) {
             setStatus("Fetching chargers...");
             try {
-                const url = `https://api.openchargemap.io/v3/poi/?key=${OCM_KEY}&latitude=${lat}&longitude=${lon}&distance=25&maxresults=10&compact=false&verbose=true`;
+                // Using latest v3 API endpoint and parameters
+                const url = `https://api.openchargemap.io/v3/poi/?key=${OCM_KEY}&latitude=${lat}&longitude=${lon}&distance=25&distanceunit=KM&maxresults=10&compact=true&verbose=false`;
                 const response = await fetch(url);
+                if (!response.ok) throw new Error("API Limit reached or invalid key.");
                 const data = await response.json();
                 renderResults(data);
-            } catch (err) { setStatus("Failed to reach API.", true); }
+            } catch (err) { 
+                setStatus("Failed to reach API: " + err.message, true); 
+            }
         }
 
         function getStatusBadge(statusType) {
             const status = statusType ? statusType.Title.toLowerCase() : 'unknown';
             if (status.includes('available')) return `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Available</span>`;
-            if (status.includes('use') || status.includes('operational')) return `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">In Use</span>`;
+            if (status.includes('use') || status.includes('operational')) return `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Operational</span>`;
             return `<span class="bg-slate-800 text-slate-500 border border-slate-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Offline</span>`;
         }
 
@@ -108,7 +113,6 @@
                 const operatorName = (poi.OperatorInfo?.Title && poi.OperatorInfo.Title !== "(Unknown Operator)") 
                                      ? poi.OperatorInfo.Title : "Independent";
 
-                // Map connection types to cleaner names
                 const connections = poi.Connections ? poi.Connections.map(conn => {
                     const title = conn.ConnectionType?.Title || "Unknown Plug";
                     const kw = conn.PowerKW ? `${conn.PowerKW}kW` : "";
@@ -133,7 +137,7 @@
 
                         <div class="flex items-center gap-4 mt-6">
                              <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">
-                                📍 ${poi.AddressInfo.Distance.toFixed(1)} KM Away
+                                📍 ${poi.AddressInfo.Distance ? poi.AddressInfo.Distance.toFixed(1) : '?'} KM Away
                             </p>
                         </div>
                     </div>
